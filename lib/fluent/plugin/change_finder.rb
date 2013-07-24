@@ -14,6 +14,9 @@ module Fluent
     end
 
     def next(x)
+      # To avoid resulting in NotRegularMatrix error at `inv` eventually
+      return 0.0 if x == 0.0 and @data.all? {|d| d == 0.0 }
+
       len = @data.size
 
       # update @mu
