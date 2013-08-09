@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+# -*- encoding: utf-8 -*-
+require 'csv'
+require 'thor'
+require 'logger'
+require_relative '../lib/fluent/plugin/change_finder'
+$log = Logger.new(STDOUT)
+$log.level = Logger::INFO
+
+class AnomalyDetectCLI < Thor
+  default_command :start
+
+  desc 'start input_file', 'Apply anomalydetect for the data in given file'
+  long_desc <<-LONGDESC
+  The input file format is just lines of numbers.
+  LONGDESC
+  option :outlier_term, :type => :numeric, :default => 28
+  option :outlier_discount, :type => :numeric, :default => 0.05
+  option :smooth_term, :type => :numeric, :default => 7
+  option :score_term, :type => :numeric, :default => 14
+  option :score_discount, :type => :numeric, :default => 0.1
+  option :threshold, :type => :numeric, :default => -1.0
+  def start(input)
+    #if options[:store_file]
+    #  f = Pathname.new(options[:store_file])
+    #end
+
+    @outlier_buf = []
+    @outlier = Fluent::ChangeFinder.new(options[:outlier_term], options[:outlier_discount])
+    @score   = Fluent::ChangeFinder.new(options[:score_term], options[:score_discount])
+
+    File.foreach(input).each do |row|
+      val = row.to_f
+      outlier = @outlier.next(val)
+
+      @outlier_buf.push outlier
+      @outlier_buf.shift if @outlier_buf.size > options[:smooth_term]
+      outlier_avg = @outlier_buf.empty? ? 0.0 : @outlier_buf.inject(:+).to_f / @outlier_buf.size
+
+      score = @score.next(outlier_avg)
+      puts score
+    end
+  end
+end
+
+AnomalyDetectCLI.start(ARGV)
