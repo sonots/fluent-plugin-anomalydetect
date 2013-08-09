@@ -12,7 +12,8 @@ class AnomalyDetectCLI < Thor
 
   desc 'start input_file', 'Apply anomalydetect for the data in given file'
   long_desc <<-LONGDESC
-  The input file format is just lines of numbers.
+  The input file format is CSV or just lines of numbers. 
+  This command uses only the first column as data if it is a csv format.
   LONGDESC
   option :outlier_term, :type => :numeric, :default => 28
   option :outlier_discount, :type => :numeric, :default => 0.05
@@ -21,16 +22,12 @@ class AnomalyDetectCLI < Thor
   option :score_discount, :type => :numeric, :default => 0.1
   option :threshold, :type => :numeric, :default => -1.0
   def start(input)
-    #if options[:store_file]
-    #  f = Pathname.new(options[:store_file])
-    #end
-
     @outlier_buf = []
     @outlier = Fluent::ChangeFinder.new(options[:outlier_term], options[:outlier_discount])
     @score   = Fluent::ChangeFinder.new(options[:score_term], options[:score_discount])
 
     File.foreach(input).each do |row|
-      val = row.to_f
+      val = row.split(',').first.to_f
       outlier = @outlier.next(val)
 
       @outlier_buf.push outlier
