@@ -163,6 +163,25 @@ class AnomalyDetectOutputTest < Test::Unit::TestCase
     end
   end
 
+  def test_nodata
+    d = create_driver %[
+      tag test.anomaly
+      outlier_term 28
+      outlier_discount 0.05
+      smooth_term 7
+      score_term 14
+      score_discount 0.1
+      tick 10
+    ]
+
+    d.run do
+      10000.times do
+        r = d.instance.flush
+        assert_equal 0.0, r['target']
+      end
+    end
+  end
+
   def test_emit_stock_data
     require 'csv'
     reader = CSV.open("test/stock.2432.csv", "r")
