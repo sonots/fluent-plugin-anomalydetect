@@ -296,4 +296,29 @@ class AnomalyDetectOutputTest < Test::Unit::TestCase
       assert_equal nil, r
     end
   end
+
+  def test_input_greater_equal
+    d = create_driver %[
+      target y
+      input_greater_equal 1.0
+    ]
+    # should output if val >= input_greater_val
+    d.run do
+      d.emit({'y' => 0.0}); d.instance.flush
+      d.emit({'y' => 0.0}); d.instance.flush
+      d.emit({'y' => 0.0}); d.instance.flush
+      d.emit({'y' => 1.0}); r = d.instance.flush
+      assert_not_equal nil, r
+    end
+
+    # should not output if val < input_greater_val
+    d.run do
+      d.emit({'y' => 0.0}); d.instance.flush
+      d.emit({'y' => 0.0}); d.instance.flush
+      d.emit({'y' => 0.0}); d.instance.flush
+      d.emit({'y' => -1.0}); r = d.instance.flush
+      r = d.instance.flush
+      assert_equal nil, r
+    end
+  end
 end
