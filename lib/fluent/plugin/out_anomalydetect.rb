@@ -15,6 +15,7 @@ module Fluent
     config_param :target, :string, :default => nil
     config_param :store_file, :string, :default => nil
     config_param :threshold, :float, :default => -1.0
+    config_param :input_greater_equal, :float, :default => nil
     config_param :trend, :default => nil do |val|
       case val.downcase
       when 'up'
@@ -192,6 +193,9 @@ module Fluent
           return nil if val < @outlier.mu
         when :down
           return nil if val > @outlier.mu
+        end
+        if @input_greater_equal
+          return nil if val < @input_greater_equal
         end
         {"outlier" => outlier, "score" => score, "target" => val}
       else

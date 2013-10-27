@@ -80,7 +80,7 @@ If "store_file" option was specified, a historical stat will be stored to the fi
       threshold 3
     </match>
 
-If "threshold" option was specified, plugin only ouput when the anomalyscore is more than threshold.
+If "threshold" option was specified, plugin outputs only when the anomalyscore is more than threshold.
 
     <match access.**>
       type anomalydetect
@@ -88,7 +88,15 @@ If "threshold" option was specified, plugin only ouput when the anomalyscore is 
       trend up
     </match>
 
-If "trend" option was specified, plugin only ouput when the input data tends to up (or down). 
+If "trend" option was specified, plugin outputs only when the input data tends to up (or down). 
+
+    <match access.**>
+      type anomalydetect
+      ...
+      input_greater_equal 1.0
+    </match>
+
+If "input_greater_equal" option was specified, plugin outputs only when the current input data is greater than or equal to (>=) the specified value. Notice that the outlier will still be computed for such input data too.
 
 == Theory
 "データマイニングによる異常検知" http://amzn.to/XHXNun
